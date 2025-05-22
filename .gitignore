@@ -1,0 +1,6 @@
+# .envファイルの除外
+.env
+
+# node_modulesの除外
+node_modules/
+
