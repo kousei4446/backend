@@ -1,0 +1,199 @@
+openapi: 3.0.0
+info:
+  title: Quiz API
+  version: 1.0.0
+  description: Express + MySQL クイズアプリ
+servers:
+  - url: http://localhost:8000
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RankingItem:
+      type: object
+      properties:
+        userId:    { type: string, example: "user001" }
+        userName:  { type: string, example: "Alice" }
+        rank:      { type: integer, example: 1 }
+        correctNum: { type: integer, example: 42 }
+
+    UserStats:
+      type: object
+      properties:
+        hardClearNum:     { type: integer }
+        normalClearNum:   { type: integer }
+        easyClearNum:     { type: integer }
+        hardCorrectNum:   { type: integer }
+        normalCorrectNum: { type: integer }
+        easyCorrectNum:   { type: integer }
+
+    UserInfo:
+      type: object
+      properties:
+        userId:    { type: string }
+        email:     { type: string }
+        userName:  { type: string }
+        iconPath:  { type: string }
+        role:      { type: string }
+        stats:
+          $ref: '#/components/schemas/UserStats'
+        createdAt: { type: string, format: date-time, example: "2024-01-01T00:00:00Z" }
+        updatedAt: { type: string, format: date-time, example: "2024-01-01T00:00:00Z" }
+
+paths:
+  # ---------- 認証 ----------
+  /api/auth/login:
+    post:
+      summary: ユーザー登録またはログイン
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, password]
+              properties:
+                userId:    { type: string, example: user001 }
+                userName:  { type: string, example: Alice }
+                password:  { type: string, example: password123 }
+                email:     { type: string, example: alice@example.com }
+      responses:
+        "200":
+          description: JWT とユーザーIDを返す
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId: { type: string }
+                  token:  { type: string }
+
+  # ---------- ユーザー ----------
+  /api/users/me:
+    get:
+      summary: 自分のユーザー情報取得
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: ユーザー情報
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+
+    put:
+      summary: 自分のユーザー情報更新
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userName: { type: string, example: "NewName" }
+                iconPath: { type: string, example: "new-icon.png" }
+      responses:
+        "200":
+          description: 更新完了
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: "更新完了" }
+  # ---------- クイズ ----------
+  /api/questions:
+    get:
+      summary: ランダムに10問取得
+      tags: [Quizzes]
+      responses:
+        "200":
+          description: 質問一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Question" }
+
+  /api/quizzes/{id}:
+    get:
+      summary: 特定クイズ取得
+      tags: [Quizzes]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: 1問の詳細
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Question" }
+
+  /api/questions/{questionId}/answers:
+    post:
+      summary: 質問への回答結果を登録
+      tags: [Questions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: questionId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - selectedAnswer
+                - isCorrect
+              properties:
+                selectedAnswer:
+                  type: string
+                  example: "A"
+                isCorrect:
+                  type: boolean
+                  example: true
+      responses:
+        "200":
+          description: 解説を含むレスポンス
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  explanation:
+                    type: string
+                    example: "選択肢Aが正解なのは、犬は英語で'Dog'だからです。"
+
+  /api/rankings:
+    get:
+      summary: ランキング上位ユーザー一覧取得
+      tags: [Rankings]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: ランキング結果
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RankingItem'

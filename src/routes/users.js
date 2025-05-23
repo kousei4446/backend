@@ -1,15 +1,8 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../config/db');
+const router = require('express').Router();
+const auth = require('../middlewares/auth');
+const ctrl = require('../controllers/usersController');
 
-router.get('/', async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT * FROM users'); 
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+router.get('/me', auth, ctrl.me);
+router.put('/me',auth, ctrl.updateMe);
 
 module.exports = router;
-
