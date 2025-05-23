@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.1.0
 info:
   title: Quiz API
   version: 1.0.0
@@ -17,39 +17,53 @@ components:
     RankingItem:
       type: object
       properties:
-        userId:    { type: string, example: "user001" }
-        userName:  { type: string, example: "Alice" }
-        rank:      { type: integer, example: 1 }
+        userId: { type: string, example: "user001" }
+        userName: { type: string, example: "Alice" }
+        rank: { type: integer, example: 1 }
         correctNum: { type: integer, example: 42 }
 
     UserStats:
       type: object
       properties:
-        hardClearNum:     { type: integer }
-        normalClearNum:   { type: integer }
-        easyClearNum:     { type: integer }
-        hardCorrectNum:   { type: integer }
+        hardClearNum: { type: integer }
+        normalClearNum: { type: integer }
+        easyClearNum: { type: integer }
+        hardCorrectNum: { type: integer }
         normalCorrectNum: { type: integer }
-        easyCorrectNum:   { type: integer }
+        easyCorrectNum: { type: integer }
 
     UserInfo:
       type: object
       properties:
-        userId:    { type: string }
-        email:     { type: string }
-        userName:  { type: string }
-        iconPath:  { type: string }
-        role:      { type: string }
+        userId: { type: string }
+        email: { type: string }
+        userName: { type: string }
+        iconPath: { type: string }
+        role: { type: string }
         stats:
           $ref: '#/components/schemas/UserStats'
-        createdAt: { type: string, format: date-time, example: "2024-01-01T00:00:00Z" }
-        updatedAt: { type: string, format: date-time, example: "2024-01-01T00:00:00Z" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    Question:
+      type: object
+      properties:
+        questionId: { type: string }
+        question: { type: string }
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              text: { type: string }
+        answer: { type: string }
+        explanation: { type: string }
 
 paths:
-  # ---------- 認証 ----------
   /api/auth/login:
     post:
-      summary: ユーザー登録またはログイン
+      summary: ユーザー登録またはサインイン
       tags: [Auth]
       requestBody:
         required: true
@@ -57,12 +71,11 @@ paths:
           application/json:
             schema:
               type: object
-              required: [userId, password]
+              required: [userId, userName, email]
               properties:
-                userId:    { type: string, example: user001 }
-                userName:  { type: string, example: Alice }
-                password:  { type: string, example: password123 }
-                email:     { type: string, example: alice@example.com }
+                userId: { type: string }
+                userName: { type: string }
+                email: { type: string }
       responses:
         "200":
           description: JWT とユーザーIDを返す
@@ -72,9 +85,8 @@ paths:
                 type: object
                 properties:
                   userId: { type: string }
-                  token:  { type: string }
+                  token: { type: string }
 
-  # ---------- ユーザー ----------
   /api/users/me:
     get:
       summary: 自分のユーザー情報取得
@@ -101,8 +113,8 @@ paths:
             schema:
               type: object
               properties:
-                userName: { type: string, example: "NewName" }
-                iconPath: { type: string, example: "new-icon.png" }
+                userName: { type: string }
+                iconPath: { type: string }
       responses:
         "200":
           description: 更新完了
@@ -112,88 +124,80 @@ paths:
                 type: object
                 properties:
                   message: { type: string, example: "更新完了" }
-  # ---------- クイズ ----------
-  /api/questions:
+
+  /api/questions/{level}/{levelId}:
     get:
-      summary: ランダムに10問取得
-      tags: [Quizzes]
+      summary: 特定の質問を取得
+      tags: [Questions]
+      parameters:
+        - in: path
+          name: level
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: levelId
+          required: true
+          schema:
+            type: string
       responses:
         "200":
-          description: 質問一覧
+          description: 質問取得
           content:
             application/json:
               schema:
                 type: array
-                items: { $ref: "#/components/schemas/Question" }
+                items:
+                  $ref: '#/components/schemas/Question'
 
-  /api/quizzes/{id}:
-    get:
-      summary: 特定クイズ取得
-      tags: [Quizzes]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      responses:
-        "200":
-          description: 1問の詳細
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Question" }
-
-  /api/questions/{questionId}/answers:
+  /api/questions/isCorrect:
     post:
-      summary: 質問への回答結果を登録
+      summary: 質問への正誤を登録
       tags: [Questions]
       security:
         - bearerAuth: []
-      parameters:
-        - in: path
-          name: questionId
-          required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - selectedAnswer
-                - isCorrect
               properties:
-                selectedAnswer:
-                  type: string
-                  example: "A"
-                isCorrect:
-                  type: boolean
-                  example: true
+                questionLevel: { type: string }
+                isCorrect: { type: boolean }
       responses:
         "200":
-          description: 解説を含むレスポンス
+          description: 正誤登録完了
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  explanation:
-                    type: string
-                    example: "選択肢Aが正解なのは、犬は英語で'Dog'だからです。"
+                  message: { type: string, example: "正誤登録完了" }
 
   /api/rankings:
     get:
-      summary: ランキング上位ユーザー一覧取得
+      summary: 各levelのランキング上位10人を取得
       tags: [Rankings]
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: ランキング結果
+          description: ランキング情報
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RankingItem'
+                type: object
+                properties:
+                  hard:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RankingItem'
+                  normal:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RankingItem'
+                  easy:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RankingItem'
