@@ -10,23 +10,26 @@ exports.getByLevel = async (level, levelId) =>
 
 
 exports.answer = async ({ userId, questionLevel, isCorrect }) => {
-  let inc = 1
-  if (!isCorrect) {
-    inc = 0
-  }
+  const inc = isCorrect ? 1 : 0;
 
   const clearCol = `${questionLevel}_clear_num`;
   const correctCol = `${questionLevel}_correct_num`;
 
-  await pool.query(
-    `UPDATE trx_user
-     SET ${clearCol} = ${clearCol} + $1,
-         ${correctCol} = ${correctCol} + 1
-   WHERE u_id = $2`,
-    [inc, userId],
-  );
+  const query = `
+    UPDATE trx_user
+    SET ${clearCol} = ${clearCol} + $1,
+        ${correctCol} = ${correctCol} + 1
+    WHERE u_id = $2
+  `;
 
+  try {
+    await pool.query(query, [inc, userId]);
+  } catch (err) {
+    console.error("❌ クイズ正誤登録失敗:", err.message);
+    throw err;
+  }
 };
+
 
 exports.getQuizById = async (quizId) => {
   const [rows] = await pool.query(
