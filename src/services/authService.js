@@ -11,5 +11,5 @@ exports.loginOrRegister = async ({ userId, userName, email }) => {
     user = await userModel.findById(userId);
   }
 
-  return { userId: user.u_id }; // ✅ 自前のトークンは返さない
+  return { userId: user.u_id }; 
 };

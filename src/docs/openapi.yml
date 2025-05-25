@@ -87,10 +87,17 @@ paths:
                   userId: { type: string }
                   token: { type: string }
 
-  /api/users/me:
+  /api/users/{userId}:
     get:
       summary: 自分のユーザー情報取得
       tags: [Users]
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            example: user001
       security:
         - bearerAuth: []
       responses:
@@ -104,6 +111,13 @@ paths:
     put:
       summary: 自分のユーザー情報更新
       tags: [Users]
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            example: user001
       security:
         - bearerAuth: []
       requestBody:
@@ -135,11 +149,13 @@ paths:
           required: true
           schema:
             type: string
+            example: easy
         - in: path
           name: levelId
           required: true
           schema:
             type: string
+            example: 1
       responses:
         "200":
           description: 質問取得
@@ -163,6 +179,7 @@ paths:
             schema:
               type: object
               properties:
+                userId: { type: string }
                 questionLevel: { type: string }
                 isCorrect: { type: boolean }
       responses:
@@ -201,3 +218,5 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/RankingItem'
+
+

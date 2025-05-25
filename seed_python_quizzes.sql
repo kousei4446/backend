@@ -1,4 +1,4 @@
-
+SET NAMES utf8mb4;
 USE quiz;
 
 /* ---------- EASY ---------- */
@@ -7,7 +7,7 @@ INSERT INTO quizzes
 VALUES
 -- Q1 代入と比較の混同
 ('easy',   1,
- '次のコードの 2 行目はエラーになります。原因はどれ？\n\n```python\nx = 5\nif x = 10:\n    print(\"match\")\n```',
+ '次のコードの 2 行目はエラーになります。原因はどれ？\n\n```python\nx = 5\nif x = 10:\n    print(\"match\")\n`  ``',
  '演算子の左右に空白がない',
  '比較演算子ではなく代入演算子を使っている',
  'if 文にコロンがない',

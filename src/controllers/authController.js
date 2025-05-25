@@ -2,7 +2,7 @@ const authService = require('../services/authService');
 
 exports.login = async (req, res) => {
   try {
-    console.log('Login request received:', req.body);
+    // console.log('Login request received:', req.body);
     const result = await authService.loginOrRegister(req.body);
     res.json(result);
   } catch (e) {

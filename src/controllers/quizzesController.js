@@ -9,30 +9,34 @@ exports.list = async (_req, res) => {
 exports.get = async (req, res) => {
   const { level, levelId } = req.params;
   const quiz = await quizzesService.getByLevel(level, levelId);
+  console.log(quiz);
   if (!quiz) return res.status(404).json({ message: 'Not found' });
   res.json(quiz);
 };
 
 exports.answer = async (req, res) => {
-  const { selectedAnswer, isCorrect } = req.body;
-  const quizId = req.params.id;
+  try {
+    const { userId, questionLevel, isCorrect } = req.body;
 
-  if (!selectedAnswer) {
-    return res.status(400).json({ message: '選択肢がありません' });
+    if (!userId || !questionLevel || typeof isCorrect !== "boolean") {
+      return res.status(400).json({ message: 'Invalid request' });
+    }
+
+    // 回答を記録
+    await quizzesService.answer({
+      userId,
+      questionLevel,
+      isCorrect,
+    });
+
+    // 解説を取得（必要ならここで取得処理を追加）
+
+    res.json({
+      message: "正誤登録完了"
+    });
+  } catch (err) {
+    console.error('Error in answer controller:', err);
+    res.status(500).json({ message: 'サーバーエラーが発生しました' });
   }
-
-  // 回答を記録
-  await quizzesService.answer({
-    quizId,
-    userId: req.user.userId,
-    isCorrect,
-  });
-
-  // 解説を取得
-  const quiz = await quizzesService.getQuizById(quizId); // quiz.explanation を取得できる前提
-
-  res.json({
-    explanation: quiz?.explanation || '解説が見つかりませんでした',
-  });
 };
 

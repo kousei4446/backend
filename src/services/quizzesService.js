@@ -9,17 +9,18 @@ exports.getByLevel = async (level, levelId) =>
   quizzesModel.findByLevel(level, levelId);
 
 
-exports.answer = async ({ quizId, userId, isCorrect }) => {
-  if (!isCorrect) return;
-  const quiz = await quizzesModel.findById(quizId);
-  if (!quiz) return;
+exports.answer = async ({ userId,questionLevel,isCorrect }) => {
+  let inc = 1
+  if (!isCorrect) {
+    inc = 0
+  }
 
-  const clearCol = `${quiz.level}_clear_num`;
-  const correctCol = `${quiz.level}_correct_num`;
+  const clearCol = `${questionLevel}_clear_num`;
+  const correctCol = `${questionLevel}_correct_num`;
 
   await pool.query(
     `UPDATE trx_user
-       SET ${clearCol} = ${clearCol} + 1,
+       SET ${clearCol} = ${clearCol} + ${inc},
            ${correctCol} = ${correctCol} + 1
      WHERE u_id = ?`,
     [userId],
