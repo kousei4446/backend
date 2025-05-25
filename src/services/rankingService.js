@@ -7,7 +7,7 @@ exports.getRankingList = async () => {
       userId: row.userId,
       userName: row.userName,
       rank: index + 1,
-      correctNum: row.correctNum,
+      clearNum: row.clearNum,
     }));
   };
 
