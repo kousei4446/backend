@@ -2,7 +2,7 @@ const fs = require('fs');
 const pool = require('./src/config/db');
 
 const initSQL = fs.readFileSync('./init2.sql', 'utf8');
-const initSQL2 = fs.readFileSync('./seed_python_quizzes.sql', 'utf8');
+const initSQL2 = fs.readFileSync('./init3.sql', 'utf8');
 
 (async () => {
   try {
