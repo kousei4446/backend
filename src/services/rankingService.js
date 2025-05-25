@@ -1,3 +1,4 @@
+const rankingModel = require('../models/rankingModel');
 exports.getRankingList = async () => {
   const getTop10 = async (column) => {
     const rows = await rankingModel.getTop10ByColumn(column);
