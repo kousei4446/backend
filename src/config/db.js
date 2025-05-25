@@ -1,4 +1,4 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 const { db } = require('./index');
 
-module.exports = mysql.createPool(db);
+module.exports = new Pool(db);  
