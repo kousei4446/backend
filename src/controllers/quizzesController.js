@@ -5,11 +5,14 @@ exports.list = async (_req, res) => {
   res.json(list);
 };
 
+// controller
 exports.get = async (req, res) => {
-  const quiz = await quizzesService.get(req.params.id);
+  const { level, levelId } = req.params;
+  const quiz = await quizzesService.getByLevel(level, levelId);
   if (!quiz) return res.status(404).json({ message: 'Not found' });
   res.json(quiz);
 };
+
 exports.answer = async (req, res) => {
   const { selectedAnswer, isCorrect } = req.body;
   const quizId = req.params.id;

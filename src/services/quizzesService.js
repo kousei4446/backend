@@ -5,6 +5,10 @@ exports.list = async () => quizzesModel.randomList();
 
 exports.get = async (id) => quizzesModel.findById(id);
 
+exports.getByLevel = async (level, levelId) =>
+  quizzesModel.findByLevel(level, levelId);
+
+
 exports.answer = async ({ quizId, userId, isCorrect }) => {
   if (!isCorrect) return;
   const quiz = await quizzesModel.findById(quizId);

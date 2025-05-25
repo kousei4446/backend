@@ -5,12 +5,13 @@ exports.findById = async (u_id) => {
   return rows[0];
 };
 
-exports.create = async ({ u_id, email, user_name, password_hash }) => {
+exports.create = async ({ u_id, email, user_name }) => {
   await pool.query(
-    `INSERT INTO trx_user (u_id, email, user_name, password_hash)
-     VALUES (?,?,?,?)`,
-    [u_id, email, user_name, password_hash],
+    `INSERT INTO trx_user (u_id, email, user_name)
+   VALUES (?, ?, ?)`,
+    [u_id, email, user_name],
   );
+
 };
 
 exports.updateMe = async (userId, { userName, iconPath }) => {
