@@ -32,10 +32,17 @@ exports.answer = async ({ userId, questionLevel, isCorrect }) => {
 
 
 exports.getQuizById = async (quizId) => {
-  const [rows] = await pool.query(
-    `SELECT id AS questionId, quiz AS question,
-                option1, option2, option3, option4, level, explanation
-         FROM quizzes WHERE id = ?`,
+  const { rows } = await pool.query(
+    `SELECT id        AS "questionId",
+          quiz       AS "question",
+           option1,
+           option2,
+           option3,
+           option4,
+           level,
+           explanation
+    FROM quizzes
+   WHERE id = $1`,
     [quizId],
   );
   return rows[0];

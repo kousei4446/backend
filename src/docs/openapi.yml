@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Quiz API
   version: 1.0.0
-  description: Express + MySQL Quizアプリ
+  description: Express + MySQL クイズアプリ
 servers:
   - url: http://localhost:8000
   - url: https://backend-w6iu.onrender.com
