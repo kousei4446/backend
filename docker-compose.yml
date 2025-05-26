@@ -1,20 +1,18 @@
-version: "3.8"
-
 services:
   db:
-    image: mysql:8.0
+    image: postgres:15
     container_name: quiz_db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: password          # ← 初期 root パス
-      MYSQL_DATABASE: quiz                   # ← 自動生成される DB
-      TZ: Asia/Tokyo                         # ローカルタイムゾーン
+      POSTGRES_USER: postgres               # デフォルトユーザー（明示）
+      POSTGRES_PASSWORD: password          # 初期パスワード
+      POSTGRES_DB: quiz                    # 自動作成されるDB
+      TZ: Asia/Tokyo
     volumes:
-      - db_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
-      - ./seed_python_quizzes.sql:/docker-entrypoint-initdb.d/seed_python.sql:ro
-    healthcheck:                             # backend 起動待ち用
-      test: ["CMD", "mysqladmin", "ping", "-ppassword", "-h", "localhost"]
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       retries: 5
       start_period: 20s
@@ -29,10 +27,11 @@ services:
     volumes:
       - ./src:/app/src
       - ./package.json:/app/package.json:ro
-      - /app/node_modules           
+      # ↓ node_modules ボリュームを削除（トラブルの元）
     command: npm run dev
     depends_on:
       db:
         condition: service_healthy
+
 volumes:
   db_data:

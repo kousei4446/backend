@@ -1,15 +1,34 @@
+const pool = require('../config/db');
 const rankingModel = require('../models/rankingModel');
+
+exports.getTop10ByColumn = async (column) => {
+  const allowedColumns = ['hard_clear_num', 'normal_clear_num', 'easy_clear_num'];
+  if (!allowedColumns.includes(column)) {
+    throw new Error('Invalid column name');
+  }
+
+  const { rows } = await pool.query(`
+    SELECT 
+      u_id AS "userId", 
+      user_name AS "userName", 
+      ${column} AS "clearNum"
+    FROM trx_user
+    WHERE deleted_at IS NULL
+    ORDER BY ${column} DESC
+    LIMIT 10
+  `);
+  return rows;
+};
+
+
 exports.getRankingList = async () => {
   const getTop10 = async (column) => {
     const rows = await rankingModel.getTop10ByColumn(column);
-
-    console.log(`[DEBUG] ${column} rows:`, rows);  // ← 追加
-
     return rows.map((row, index) => ({
-      userId: row.userId,
-      userName: row.userName,
+      userId: row.userid,
+      userName: row.username,
       rank: index + 1,
-      clearNum: row.clearNum,
+      clearNum: row.clearnum,
     }));
   };
 
