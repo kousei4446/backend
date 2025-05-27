@@ -78,9 +78,7 @@ INSERT INTO quizzes (
   ('easy', 27, 'Pythonのインデントは通常何スペース？', '2', '3', '4', '8', 'C', 'PEP8では4スペースが推奨されます。'),
   ('easy', 28, 'Pythonで型を文字列として取得するには？', 'typeof()', 'gettype()', 'strtype()', 'type()', 'D', '`type()` で型オブジェクトが得られます。'),
   ('easy', 29, 'Pythonで要素がリストにあるかを調べるには？', 'in', 'has()', 'find()', 'locate()', 'A', '`in` を使って調べられます。'),
-  ('easy', 30, 'Pythonで関数を定義するキーワードは？', 'define', 'func', 'function', 'def', 'D', '`def` を使います。');
-
-
+  ('easy', 30, 'Pythonで関数を定義するキーワードは？', 'define', 'func', 'function', 'def', 'D', '`def` を使います。'),
   ('normal', 1, 'Pythonでリストを逆順に並び替えるメソッドは？', 'reverse()', 'reversed()', 'sort(reverse=True)', '反転()', 'A', '`reverse()` でその場で逆順に並び替えます。'),
   ('normal', 2, 'Pythonで関数の引数にデフォルト値を指定する正しい方法は？', 'def func(x=1):', 'def func(x):=1', 'func def(x=1):', 'def(x=1) func:', 'A', '関数定義で `def func(x=1):` の形式で指定します。'),
   ('normal', 3, 'Pythonでリスト内包表記の書き方は？', '[x for x in list]', 'for x in list -> x', '{x in list}', 'list(x)', 'A', '[x for x in list] の形式です。'),
@@ -120,7 +118,7 @@ INSERT INTO quizzes (
   ('hard', 7, 'Pythonで例外を再送出する方法は？', 'raise', 'throw', 'error', 'except', 'A', '`raise` を使って再送出します。'),
   ('hard', 8, 'Pythonで再帰関数が必要な場合は？', '自己参照処理', '高速化', '型チェック', 'ファイル操作', 'A', '再帰関数は分割・構造的な処理に適します。'),
   ('hard', 9, 'Pythonでグローバル変数を関数内で使うには？', 'global宣言する', 'constで囲う', 'defで囲う', 'varで囲う', 'A', '`global` 宣言で明示的に使えます。'),
-  ('hard', 10, 'Pythonでソートをカスタマイズするには？', 'key引数を使う', 'sortmodeを使う', 'setmodeを使う', 'compareを使う', 'A', 'key=関数 でカスタムソートができます。');
+  ('hard', 10, 'Pythonでソートをカスタマイズするには？', 'key引数を使う', 'sortmodeを使う', 'setmodeを使う', 'compareを使う', 'A', 'key=関数 でカスタムソートができます。'),
   ('hard', 11, 'Pythonで複数の例外型を1つのexceptで処理するには？', 'except A or B:', 'except (A, B):', 'except A, B:', 'except A and B:', 'B', 'タプルで複数の例外型を指定できます。'),
   ('hard', 12, 'Pythonでリストの重複を除去する方法は？', 'unique()', 'filter()', 'set()', 'distinct()', 'C', '`set()` で一時的に重複が除去されます。'),
   ('hard', 13, 'Pythonでジェネレータ関数を定義するには？', 'function*', 'gen def', 'def + yield', 'def generator()', 'C', '`yield` を含む関数がジェネレータです。'),
