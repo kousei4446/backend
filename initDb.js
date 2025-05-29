@@ -1,7 +1,9 @@
 const fs = require('fs');
 const pool = require('./src/config/db');
 
-const initSQL = fs.readFileSync('./init.sql', 'utf8');
+const path = require('path');
+const initSQL = fs.readFileSync(path.join(__dirname, '../init.sql'), 'utf8');
+
 
 (async () => {
   try {
