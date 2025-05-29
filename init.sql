@@ -1,12 +1,24 @@
--- ユーザー作成（DB作成は docker-compose.yml の POSTGRES_DB に任せる）
-CREATE USER quizuser WITH PASSWORD 'quizpass';
-GRANT ALL PRIVILEGES ON DATABASE quiz TO quizuser;
+-- クイズユーザーが存在しなければ作成
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT FROM pg_catalog.pg_roles WHERE rolname = 'quizuser'
+  ) THEN
+    CREATE ROLE quizuser LOGIN PASSWORD 'quizpass';
+  END IF;
+END
+$$;
 
--- テーブル削除・作成・初期データ投入はそのままでOK
+-- クイズユーザーにDBとスキーマの権限を付与
+GRANT ALL PRIVILEGES ON DATABASE quiz TO quizuser;
+GRANT USAGE, CREATE ON SCHEMA public TO quizuser;  -- ★ これを追加！
+
+
+-- === TABLES ==============================================================
 DROP TABLE IF EXISTS trx_user;
 DROP TABLE IF EXISTS quizzes;
 
-CREATE TABLE IF NOT EXISTS trx_user (
+CREATE TABLE trx_user (
   u_id TEXT PRIMARY KEY,
   email TEXT NOT NULL,
   user_name TEXT NOT NULL,
@@ -23,7 +35,7 @@ CREATE TABLE IF NOT EXISTS trx_user (
   deleted_at TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS quizzes (
+CREATE TABLE quizzes (
   id SERIAL PRIMARY KEY,
   level TEXT CHECK (level IN ('hard', 'normal', 'easy')) NOT NULL,
   level_id INTEGER NOT NULL,
@@ -32,18 +44,19 @@ CREATE TABLE IF NOT EXISTS quizzes (
   option2 TEXT,
   option3 TEXT,
   option4 TEXT,
-  answer TEXT,
+  answer CHAR(1) NOT NULL,
   explanation TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP
 );
 
+-- === SEED : USERS =========================================================
 INSERT INTO trx_user (u_id, email, user_name) VALUES
   ('user001', 'alice@example.com', 'Alice'),
   ('user002', 'bob@example.com', 'Bob');
 
-
+-- === SEED : QUIZZES  (EASY) ==============================================
 INSERT INTO quizzes (
   level, level_id, quiz,
   option1, option2, option3, option4,
@@ -68,7 +81,7 @@ INSERT INTO quizzes (
   ('easy', 17, 'Pythonで「等しいかどうか」の比較演算子は？', '==', '=', '===', '!=', 'A', '`==` は比較演算子です。'),
   ('easy', 18, 'Pythonで繰り返し処理に使うキーワードは？', 'loop', 'iterate', 'for', 'repeat', 'C', '`for` ループが使われます。'),
   ('easy', 19, 'Pythonで条件分岐に使うキーワードは？', 'case', 'if', 'switch', 'when', 'B', '`if` 文を使います。'),
-  ('easy', 20, 'Pythonで1つの文字を取得するには？', 'index()', 'charAt()', '[]', 'substring()', 'C', '文字列[index] で取得できます。'),
+  ('easy', 20, 'Pythonで1つの文字を取得するには？', 'index()', 'charAt()', '[]', 'substring()', 'C', `文字列[index] で取得できます。`),
   ('easy', 21, 'Pythonで改行文字は？', '\\n', '\\t', '\\r', '\\b', 'A', '`\\n` は改行文字です。'),
   ('easy', 22, 'Pythonで変数に整数を代入する方法は？', 'int x = 5', 'x = 5', 'let x = 5', 'define x 5', 'B', '`x = 5` のように代入します。'),
   ('easy', 23, 'Pythonで文字列を連結するには？', '+', '-', '*', '/', 'A', '`+` で連結できます。'),
@@ -78,7 +91,9 @@ INSERT INTO quizzes (
   ('easy', 27, 'Pythonのインデントは通常何スペース？', '2', '3', '4', '8', 'C', 'PEP8では4スペースが推奨されます。'),
   ('easy', 28, 'Pythonで型を文字列として取得するには？', 'typeof()', 'gettype()', 'strtype()', 'type()', 'D', '`type()` で型オブジェクトが得られます。'),
   ('easy', 29, 'Pythonで要素がリストにあるかを調べるには？', 'in', 'has()', 'find()', 'locate()', 'A', '`in` を使って調べられます。'),
-  ('easy', 30, 'Pythonで関数を定義するキーワードは？', 'define', 'func', 'function', 'def', 'D', '`def` を使います。'),
+  ('easy', 30, 'Pythonで関数を定義するキーワードは？', 'define', 'func', 'function', 'def', 'D', '`def` を使います。');
+
+
   ('normal', 1, 'Pythonでリストを逆順に並び替えるメソッドは？', 'reverse()', 'reversed()', 'sort(reverse=True)', '反転()', 'A', '`reverse()` でその場で逆順に並び替えます。'),
   ('normal', 2, 'Pythonで関数の引数にデフォルト値を指定する正しい方法は？', 'def func(x=1):', 'def func(x):=1', 'func def(x=1):', 'def(x=1) func:', 'A', '関数定義で `def func(x=1):` の形式で指定します。'),
   ('normal', 3, 'Pythonでリスト内包表記の書き方は？', '[x for x in list]', 'for x in list -> x', '{x in list}', 'list(x)', 'A', '[x for x in list] の形式です。'),
@@ -108,7 +123,7 @@ INSERT INTO quizzes (
   ('normal', 27, 'Pythonのassert文は何のために使う？', '例外処理', 'ログ出力', 'デバッグ用のチェック', '変数定義', 'C', '`assert` はテストやデバッグで使います。'),
   ('normal', 28, 'Pythonの関数に渡す引数をキーワードで指定するとは？', '順番無視で名前指定', 'デフォルト値の略記', 'キーワード一覧を渡す', '環境変数を渡す', 'A', '例: `func(x=3, y=4)` のように使います。'),
   ('normal', 29, 'Pythonでモジュールを読み込む方法は？', 'import モジュール名', 'include モジュール名', 'load モジュール名', 'use モジュール名', 'A', '`import` を使います。'),
-  ('normal', 30, 'Pythonのrange関数でrange(3,10,2)の意味は？', '3〜10を2つずつスキップ', '10から3まで2ずつ減少', '3〜9を2ずつ増加', '2〜10まで3ずつ', 'C', '3, 5, 7, 9 のように動きます。'),
+  ('normal', 30, 'Pythonのrange関数でrange(3,10,2)の意味は？', '3〜10を2つずつスキップ', '10から3まで2ずつ減少', '3〜9を2ずつ増加', '2〜10まで3ずつ', 'C', '3, 5, 7, 9 のように動きます。');
   ('hard', 1, 'Pythonでデコレータとは何か？', '関数をラップする関数', '関数をコピーする構文', '関数を削除する命令', '関数を変数化する方法', 'A', 'デコレータは関数をラップして機能を追加します。'),
   ('hard', 2, 'Pythonのジェネレータ式の利点は？', 'メモリ効率が良い', '計算が速い', 'コードが短い', '複数スレッドで動く', 'A', 'ジェネレータは遅延評価でメモリ効率が良いです。'),
   ('hard', 3, 'Pythonでwith文の利点は？', '自動的にcloseされる', '同期処理になる', 'デバッグしやすい', 'メモリが倍速になる', 'A', '`with` によってリソースの開放が保証されます。'),
@@ -118,28 +133,36 @@ INSERT INTO quizzes (
   ('hard', 7, 'Pythonで例外を再送出する方法は？', 'raise', 'throw', 'error', 'except', 'A', '`raise` を使って再送出します。'),
   ('hard', 8, 'Pythonで再帰関数が必要な場合は？', '自己参照処理', '高速化', '型チェック', 'ファイル操作', 'A', '再帰関数は分割・構造的な処理に適します。'),
   ('hard', 9, 'Pythonでグローバル変数を関数内で使うには？', 'global宣言する', 'constで囲う', 'defで囲う', 'varで囲う', 'A', '`global` 宣言で明示的に使えます。'),
-  ('hard', 10, 'Pythonでソートをカスタマイズするには？', 'key引数を使う', 'sortmodeを使う', 'setmodeを使う', 'compareを使う', 'A', 'key=関数 でカスタムソートができます。'),
+  ('hard', 10, 'Pythonでソートをカスタマイズするには？', 'key引数を使う', 'sortmodeを使う', 'setmodeを使う', 'compareを使う', 'A', 'key=関数 でカスタムソートができます。');
   ('hard', 11, 'Pythonで複数の例外型を1つのexceptで処理するには？', 'except A or B:', 'except (A, B):', 'except A, B:', 'except A and B:', 'B', 'タプルで複数の例外型を指定できます。'),
   ('hard', 12, 'Pythonでリストの重複を除去する方法は？', 'unique()', 'filter()', 'set()', 'distinct()', 'C', '`set()` で一時的に重複が除去されます。'),
   ('hard', 13, 'Pythonでジェネレータ関数を定義するには？', 'function*', 'gen def', 'def + yield', 'def generator()', 'C', '`yield` を含む関数がジェネレータです。'),
   ('hard', 14, 'Pythonのデコレータに関数を渡すには？', '@デコレータ名', '#デコレータ名', '$デコレータ名', 'decorator()', 'A', '`@デコレータ名` を関数の上に書きます。'),
   ('hard', 15, 'Pythonの`__init__.py`の役割は？', 'クラスを定義する', 'パッケージ化', '依存解決', 'テスト用設定', 'B', 'ディレクトリをパッケージとして認識させます。'),
   ('hard', 16, 'Pythonで引数の数が可変の関数を定義するには？', '*args を使う', '**kwargs を使う', '引数を省略する', 'default引数を使う', 'A', '*args によって複数引数をタプルで受け取れます。'),
-  ('hard', 17, 'Pythonの`@staticmethod`の特徴は？', 'selfを受け取る', 'インスタンスメソッド', 'クラスを受け取る', 'インスタンスなしで呼べる', 'D', 'インスタンス不要で呼び出せます。'),
-  ('hard', 18, 'Pythonで`with open(...)`が便利なのはなぜ？', '自動でcloseされる', '高速化される', '並列処理になる', '暗号化される', 'A', 'ファイルクローズを自動で行ってくれます。'),
+  ('hard', 17, 'Pythonの@staticmethodの特徴は？', 'selfを受け取る', 'インスタンスメソッド', 'クラスを受け取る', 'インスタンスなしで呼べる', 'D', 'インスタンス不要で呼び出せます。'),
+  ('hard', 18, 'Pythonでwith open(...)が便利なのはなぜ？', '自動でcloseされる', '高速化される', '並列処理になる', '暗号化される', 'A', 'ファイルクローズを自動で行ってくれます。'),
   ('hard', 19, 'Pythonのガベージコレクション機構で使われるのは？', '参照カウント', 'マーク＆スイープ', '世代別GC', '全て', 'D', 'CPythonは参照カウントと世代別GCを併用しています。'),
   ('hard', 20, 'Pythonのクロージャとは？', '関数内で定義された関数', '他関数を呼ぶ関数', 'クラスの一部', '装飾用関数', 'A', '外部スコープの変数を保持した関数です。'),
-  ('hard', 21, 'Pythonの`__name__ == "__main__"`の意味は？', '外部から呼ばれたときに実行', 'インポートされたとき実行', '直接実行時のみ実行', '何もしない', 'C', '直接ファイルを実行したときにだけ処理されます。'),
-  ('hard', 22, 'Pythonで文字列のフォーマット方法はどれ？', 'str.format()', 'string.replace()', 'str.concat()', 'format.str()', 'A', '`str.format()` で挿入できます。'),
-  ('hard', 23, 'Pythonの`map()`関数の特徴は？', 'リストを結合する', '条件を満たす要素を抽出', '要素に関数を適用', '並列処理をする', 'C', '関数をすべての要素に適用します。'),
+  ('hard', 21, 'Pythonの__name__ == "__main__"の意味は？', '外部から呼ばれたときに実行', 'インポートされたとき実行', '直接実行時のみ実行', '何もしない', 'C', '直接ファイルを実行したときにだけ処理されます。'),
+  ('hard', 22, 'Pythonで文字列のフォーマット方法はどれ？', 'str.format()', 'string.replace()', 'str.concat()', 'format.str()', 'A', 'str.format() で挿入できます。'),
+  ('hard', 23, 'Pythonのmap()関数の特徴は？', 'リストを結合する', '条件を満たす要素を抽出', '要素に関数を適用', '並列処理をする', 'C', '関数をすべての要素に適用します。'),
   ('hard', 24, 'Pythonで高階関数とは？', '戻り値がタプルの関数', '引数に関数を取る関数', '処理速度が高い関数', '並列処理関数', 'B', '関数を引数や戻り値にできる関数です。'),
-  ('hard', 25, 'Pythonでモジュールを再読み込みするには？', 'importlib.reload()', 'reload()', 'refresh()', 'reimport()', 'A', '`importlib.reload()` を使用します。'),
+  ('hard', 25, 'Pythonでモジュールを再読み込みするには？', 'importlib.reload()', 'reload()', 'refresh()', 'reimport()', 'A', 'importlib.reload() を使用します。'),
   ('hard', 26, 'Pythonでクラスメソッドを定義するには？', '@classmethod', '@staticmethod', '@instancemethod', '@init', 'A', '@classmethod を使います。'),
-  ('hard', 27, 'Pythonで再帰の最大回数を設定するには？', 'sys.setrecursionlimit()', 'os.setlimit()', 'limit.recursion()', 'threading.setdepth()', 'A', '`sys` モジュールを使います。'),
+  ('hard', 27, 'Pythonで再帰の最大回数を設定するには？', 'sys.setrecursionlimit()', 'os.setlimit()', 'limit.recursion()', 'threading.setdepth()', 'A', 'sys モジュールを使います。'),
   ('hard', 28, 'Pythonのモジュール検索順序で先に見られるのは？', '現在のディレクトリ', '標準ライブラリ', 'インストール済パッケージ', 'Cドライブ', 'A', '現在のスクリプトディレクトリが最初に検索されます。'),
   ('hard', 29, 'Pythonで変数の型注釈をサポートする機能は？', '型ヒント', '型推論', '型検証', '型強制', 'A', '型ヒントは補完や解析に役立ちます。'),
   ('hard', 30, 'Pythonで並列処理を行う標準モジュールは？', 'threading', 'multiprocessing', 'concurrent.futures', '全て', 'D', 'どれも並列処理に使えます。');
 
 
+
+-- quizzes テーブル定義ここまで
+
+-- ✅ ここで権限付与（GRANT）を移動
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO quizuser;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO quizuser;
+
+-- 所有者をquizuserに変更（これがないとGRANTだけでは不十分）
+ALTER TABLE trx_user OWNER TO quizuser;
+ALTER TABLE quizzes OWNER TO quizuser;

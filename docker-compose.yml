@@ -1,22 +1,24 @@
-services:
-  db:
-    image: postgres:15
-    container_name: quiz_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres               # デフォルトユーザー（明示）
-      POSTGRES_PASSWORD: password          # 初期パスワード
-      POSTGRES_DB: quiz                    # 自動作成されるDB
-      TZ: Asia/Tokyo
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      retries: 5
-      start_period: 20s
+  services:
+    db:
+      image: postgres:15
+      container_name: quiz_db
+      restart: unless-stopped
+      environment:
+        POSTGRES_USER: postgres               # デフォルトユーザー（明示）
+        POSTGRES_PASSWORD: password          # 初期パスワード
+        POSTGRES_DB: quiz                    # 自動作成されるDB
+        TZ: Asia/Tokyo
+        POSTGRES_INITDB_ARGS: "--auth=md5"
+      volumes:
+        - db_data:/var/lib/postgresql/data
+        - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U postgres"]
+        interval: 10s
+        retries: 5
+        start_period: 20s
 
+<<<<<<< Updated upstream
   backend:
     build: .
     container_name: quiz_backend
@@ -32,6 +34,23 @@ services:
     depends_on:
       db:
         condition: service_healthy
+=======
+    backend:
+      build: .
+      container_name: quiz_backend
+      ports:
+        - "8000:8000"
+      env_file:
+        - .env
+      volumes:
+        - ./src:/app/src
+        - ./package.json:/app/package.json:ro
+        - ./credentials:/app/credentials:ro 
+      command: npm run dev
+      depends_on:
+        db:
+          condition: service_healthy
+>>>>>>> Stashed changes
 
-volumes:
-  db_data:
+  volumes:
+    db_data:
