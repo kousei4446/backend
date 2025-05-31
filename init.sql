@@ -1,17 +1,17 @@
--- -- クイズユーザーが存在しなければ作成
--- DO $$
--- BEGIN
---   IF NOT EXISTS (
---     SELECT FROM pg_catalog.pg_roles WHERE rolname = 'quizuser'
---   ) THEN
---     CREATE ROLE quizuser LOGIN PASSWORD 'quizpass';
---   END IF;
--- END
--- $$;
+-- クイズユーザーが存在しなければ作成
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT FROM pg_catalog.pg_roles WHERE rolname = 'quizuser'
+  ) THEN
+    CREATE ROLE quizuser LOGIN PASSWORD 'quizpass';
+  END IF;
+END
+$$;
 
--- -- クイズユーザーにDBとスキーマの権限を付与
--- GRANT ALL PRIVILEGES ON DATABASE quiz TO quizuser;
--- GRANT USAGE, CREATE ON SCHEMA public TO quizuser;  -- ★ これを追加！
+-- クイズユーザーにDBとスキーマの権限を付与
+GRANT ALL PRIVILEGES ON DATABASE quiz TO quizuser;
+GRANT USAGE, CREATE ON SCHEMA public TO quizuser;  -- ★ これを追加！
 
 
 -- === TABLES ==============================================================

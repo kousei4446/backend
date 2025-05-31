@@ -40,3 +40,13 @@ exports.answer = async (req, res) => {
   }
 };
 
+exports.random = async (req, res) => {
+  try {
+    const quiz = await quizzesService.getRandomQuiz();
+    if (!quiz) return res.status(404).json({ message: 'No quiz found' });
+    res.json(quiz);
+  } catch (err) {
+    console.error('Error in random controller:', err);
+    res.status(500).json({ message: 'サーバーエラーが発生しました' });
+  }
+}

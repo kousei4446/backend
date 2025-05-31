@@ -5,9 +5,11 @@ exports.list = async () => quizzesModel.randomList();
 
 exports.get = async (id) => quizzesModel.findById(id);
 
-exports.getByLevel = async (level, levelId) =>
-  quizzesModel.findByLevel(level, levelId);
+exports.getByLevel = async (level, levelId) => quizzesModel.findByLevel(level, levelId);
 
+exports.getQuizById = async (quizId) => quizzesModel.getQuizById(quizId);
+
+exports.getRandomQuiz = async () => quizzesModel.getRandomQuiz();
 
 exports.answer = async ({ userId, questionLevel, isCorrect }) => {
   const inc = isCorrect ? 1 : 0;
@@ -29,21 +31,3 @@ exports.answer = async ({ userId, questionLevel, isCorrect }) => {
     throw err;
   }
 };
-
-
-exports.getQuizById = async (quizId) => {
-  const { rows } = await pool.query(
-    `SELECT id        AS "questionId",
-          quiz       AS "question",
-           option1,
-           option2,
-           option3,
-           option4,
-           level,
-           explanation
-    FROM quizzes
-   WHERE id = $1`,
-    [quizId],
-  );
-  return rows[0];
-}

@@ -220,4 +220,18 @@ paths:
                     items:
                       $ref: '#/components/schemas/RankingItem'
 
+  /api/questions/random:
+    get:
+      summary: ランダムにクイズを10問取得
+      tags: [Questions]
+      responses:
+        "200":
+          description: ランダムな10問のクイズ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Question'
+
 
