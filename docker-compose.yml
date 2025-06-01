@@ -3,8 +3,6 @@
       image: postgres:15
       container_name: quiz_db
       restart: unless-stopped
-      ports:
-        - "5433:5432"  # ホスト:コンテナ（5433でアクセスできる）
       environment:
         POSTGRES_USER: postgres               # デフォルトユーザー（明示）
         POSTGRES_PASSWORD: password          # 初期パスワード
