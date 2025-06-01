@@ -41,7 +41,7 @@ exports.getRandomQuiz = async () => {
     `SELECT id AS questionId,
             quiz AS question,
             option1, option2, option3, option4,
-            level, explanation
+            level, explanation,answer
      FROM quizzes
      WHERE deleted_at IS NULL
      ORDER BY RANDOM()
